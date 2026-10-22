@@ -1,15 +1,21 @@
+import {getStore} from '@netlify/blobs';
+import {randomUUID} from 'node:crypto';
+import {decodeImage,validImage} from '../uploads.mjs';
 import {createHmac,timingSafeEqual} from 'node:crypto';
 import {createRepository} from '../store.mjs';
 const reply=(status,data,headers={})=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',...headers}});
 const sign=value=>createHmac('sha256',process.env.ADMIN_PASSWORD).update(value).digest('hex');
 const equal=(a,b)=>a.length===b.length&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 function authenticated(req){if(!process.env.ADMIN_PASSWORD)return false;const cookie=(req.headers.get('cookie')||'').match(/(?:^|;\s*)session=([^;]+)/)?.[1];if(!cookie)return false;const [expiry,sig]=cookie.split('.');return /^\d+$/.test(expiry)&&Number(expiry)>Date.now()&&equal(sig||'',sign(expiry));}
-function product(p){if(typeof p.name!=='string'||!p.name.trim()||typeof p.category!=='string'||!p.category.trim()||!Number.isFinite(p.price)||p.price<=0||!Number.isInteger(p.stock)||p.stock<0||typeof p.image!=='string'||(p.image&&!/^https:\/\//.test(p.image)))throw Error('Produit invalide');return[p.name.trim(),p.category.trim(),p.price,p.stock,p.image,String(p.description||'')];}
+function product(p){if(typeof p.name!=='string'||!p.name.trim()||typeof p.category!=='string'||!p.category.trim()||!Number.isFinite(p.price)||p.price<=0||!Number.isInteger(p.stock)||p.stock<0||!validImage(p.image))throw Error('Produit invalide');return[p.name.trim(),p.category.trim(),p.price,p.stock,p.image,String(p.description||'')];}
 export default async function handler(req){try{const url=new URL(req.url);const route=url.pathname.replace(/^\/\.netlify\/functions\/api/,'/api');if(!['GET','POST','PUT','DELETE','PATCH'].includes(req.method))return reply(405,{error:'Méthode refusée'});if(req.method!=='GET'&&req.headers.get('origin')&&req.headers.get('origin')!==url.origin)return reply(403,{error:'Origine refusée'});const body=async()=>{const text=await req.text();if(text.length>100000)throw Error('Requête trop volumineuse');return JSON.parse(text||'{}');};
 if(route==='/api/admin/session'&&req.method==='GET')return reply(200,{authenticated:authenticated(req),needsSetup:!process.env.ADMIN_PASSWORD});
 if(route==='/api/admin/login'&&req.method==='POST'){if(!process.env.ADMIN_PASSWORD||process.env.ADMIN_PASSWORD.length<12)return reply(503,{error:'Configurez ADMIN_PASSWORD (12 caractères minimum) dans Netlify puis redéployez.'});const b=await body();if(!equal(sign(String(b.password||'')),sign(process.env.ADMIN_PASSWORD)))return reply(401,{error:'Mot de passe incorrect'});const expiry=String(Date.now()+86400000);return reply(200,{ok:true},{'set-cookie':`session=${expiry}.${sign(expiry)}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`});}
 if(route==='/api/admin/logout'&&req.method==='POST')return reply(200,{ok:true},{'set-cookie':'session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0'});
 if(route.startsWith('/api/admin/')&&!authenticated(req))return reply(401,{error:'Connexion requise'});
+const asset=route.match(/^\/api\/images\/([a-f0-9-]{36})$/);
+if(asset&&req.method==='GET'){const image=await getStore({name:'dicoration-images',consistency:'strong'}).getWithMetadata(asset[1],{type:'arrayBuffer'});if(!image)return reply(404,{error:'Image introuvable'});return new Response(image.data,{headers:{'content-type':image.metadata.mime,'cache-control':'public, max-age=31536000, immutable','x-content-type-options':'nosniff'}});}
+if(route==='/api/admin/images'&&req.method==='POST'){const text=await req.text();if(text.length>2900000)throw Error('Image trop volumineuse');const {bytes,mime}=decodeImage(JSON.parse(text));const id=randomUUID();await getStore({name:'dicoration-images',consistency:'strong'}).set(id,bytes,{metadata:{mime}});return reply(201,{image:'/api/images/'+id});}
 const db=createRepository();
 if(route==='/api/products'&&req.method==='GET')return reply(200,(await db.snapshot()).products.sort((a,b)=>b.id-a.id));
 if(route==='/api/orders'&&req.method==='POST'){

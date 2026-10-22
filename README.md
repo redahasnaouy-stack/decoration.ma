@@ -1,4 +1,4 @@
-# Decoration.ma
+# dicoration
 
 Boutique de décoration en français : catalogue filtrable, fiches produits, panier persistant, commande avec paiement à la livraison et dashboard privé (produits, stocks, commandes).
 
@@ -28,7 +28,7 @@ Le mot de passe est conservé sous forme de hash scrypt. La variable `ADMIN_PASS
 
 SQLite dans `data/store.sqlite` (ignoré par Git), créé au premier démarrage. Sauvegarder le dossier `data` régulièrement. Les commandes recalculent les prix côté serveur et réservent le stock dans une transaction.
 
-Les six produits initiaux, leurs prix et les photos Unsplash sont des exemples. **Aucun produit Engro n’a été importé** : l’accès à engro.ma était bloqué lors de la création. Remplacer les exemples par des fiches et images dont l’usage est autorisé, depuis le dashboard. Les images nécessitent un accès réseau ; les polices ont des alternatives locales.
+Le catalogue contient 24 produits de décoration importés depuis le catalogue public Engro le 22 octobre 2026 : noms, descriptions, prix affichés et photos du fournisseur. Les prix sont ceux du fournisseur, sans marge ajoutée. Chaque fiche du catalogue source conserve son URL et son identifiant Engro dans `netlify/catalog.json`. Le stock initial est 0 : renseigner le stock réel et vérifier les prix de vente depuis le dashboard avant de prendre des commandes. Les photos importées sont conservées dans `public/assets` et leur URL source est enregistrée dans le catalogue. Les nouvelles photos peuvent être téléversées directement depuis le dashboard.
 
 Le paiement est uniquement à la livraison. Aucun encaissement électronique ni envoi automatique de message. Avant une ouverture commerciale : configurer HTTPS et sauvegardes, ajouter les coordonnées commerciales et les conditions de vente/retour/confidentialité adaptées, remplacer les exemples et intégrer si nécessaire un prestataire de paiement et de livraison. Le serveur intégré est une base de développement ; ajouter une limitation de débit et une surveillance avant exposition publique.
 
@@ -53,3 +53,9 @@ Aucun compte Neon, PostgreSQL ou variable `DATABASE_URL` n’est nécessaire. Le
 En local, `npm start` continue à utiliser SQLite. Les données SQLite ou d’un ancien PostgreSQL ne sont pas transférées automatiquement. Le store actuel conserve l’ensemble de la boutique dans un document : adapté à une petite boutique ; archiver les commandes et revoir le stockage si le volume augmente. Les previews du même site peuvent accéder aux mêmes données : ne pas y saisir des commandes d’essai après ouverture commerciale.
 
 Le déploiement et la persistance réelle sur votre compte Netlify restent à vérifier. Les tests locaux couvrent l’authentification, les conflits d’écriture simulés et le parcours SQLite. Une modification de `ADMIN_PASSWORD` invalide les sessions existantes. Aucun mot de passe ni token Blobs ne doit être ajouté au dépôt.
+
+## Photos et migration du catalogue
+
+Dans `/admin`, modifier un produit puis sélectionner **Photo du produit** depuis l’appareil. L’interface réduit la photo à 1600 pixels maximum et l’envoie au serveur ; l’aperçu permet de vérifier le résultat avant **Enregistrer**. Formats : JPEG, PNG ou WebP, 2 Mo maximum après compression. Les fichiers sont conservés dans Netlify Blobs (`dicoration-images`) ou dans `data/images` en local. Le téléchargement est réservé à l’administrateur ; les images publiées sont accessibles publiquement.
+
+La migration du catalogue Engro est appliquée une seule fois. Les anciennes fiches de démonstration encore inchangées sont remplacées ; les produits personnalisés et les commandes sont préservés. Les imports ne synchronisent pas automatiquement les prix ni le stock fournisseur. Le header et le panier restent visibles pendant le défilement et une confirmation apparaît à chaque ajout réussi.
