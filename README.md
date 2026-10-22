@@ -1,6 +1,6 @@
 # dicoration
 
-Boutique de décoration en français : catalogue filtrable, fiches produits, panier persistant, commande avec paiement à la livraison et dashboard privé (produits, stocks, commandes).
+Catalogue de décoration en français : grille de quatre produits sur ordinateur, recherche, filtres, fiches descriptives et dashboard privé pour gérer les produits et photos. Aucun panier ni commande en ligne. Les anciennes commandes restent consultables dans l’administration.
 
 ## Démarrer
 
@@ -61,3 +61,7 @@ Dans `/admin`, modifier un produit puis sélectionner **Photo du produit** depui
 La migration du catalogue Engro est appliquée une seule fois. Les anciennes fiches de démonstration encore inchangées sont remplacées ; les produits personnalisés et les commandes sont préservés. Les imports ne synchronisent pas automatiquement les prix ni le stock fournisseur. Le header et le panier restent visibles pendant le défilement et une confirmation apparaît à chaque ajout réussi.
 
 Une migration unique ajoute 10 unités aux produits Engro déjà importés dont le stock est encore 0. Les quantités positives et les produits personnalisés restent inchangés. Elle ne se réapplique pas après une vente ou un passage à zéro ultérieur.
+
+## Mode catalogue
+
+Le site public affiche uniquement les produits, leurs photos, prix et descriptions. Les fiches se ferment par la croix, la touche Échap ou un clic extérieur. Le panier, le formulaire de commande et les annonces de livraison/paiement ont été retirés. `POST /api/orders` renvoie 410 pour empêcher de nouvelles commandes ; les données historiques sont conservées.
