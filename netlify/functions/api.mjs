@@ -1,3 +1,4 @@
+import {sendOrderToSheets} from '../sheets.mjs';
 import {validateOrder,placeOrder} from '../orders.mjs';
 import {getStore} from '@netlify/blobs';
 import {randomUUID} from 'node:crypto';
@@ -17,13 +18,22 @@ if(route.startsWith('/api/admin/')&&!authenticated(req))return reply(401,{error:
 const asset=route.match(/^\/api\/images\/([a-f0-9-]{36})$/);
 if(asset&&req.method==='GET'){const image=await getStore({name:'dicoration-images',consistency:'strong'}).getWithMetadata(asset[1],{type:'arrayBuffer'});if(!image)return reply(404,{error:'Image introuvable'});return new Response(image.data,{headers:{'content-type':image.metadata.mime,'cache-control':'public, max-age=31536000, immutable','x-content-type-options':'nosniff'}});}
 if(route==='/api/admin/images'&&req.method==='POST'){const text=await req.text();if(text.length>2900000)throw Error('Image trop volumineuse');const {bytes,mime}=decodeImage(JSON.parse(text));const id=randomUUID();await getStore({name:'dicoration-images',consistency:'strong'}).set(id,bytes,{metadata:{mime}});return reply(201,{image:'/api/images/'+id});}
-if(route==='/api/orders'&&req.method==='POST'){const input=validateOrder(await body());return reply(201,await createRepository().mutate(state=>placeOrder(state,input)));}
+if(route==='/api/orders'&&req.method==='POST'){const input=validateOrder(await body());const repository=createRepository();const result=await repository.mutate(state=>placeOrder(state,input));try{await syncSheets(repository,result.id);}catch{}return reply(201,result);}
 const db=createRepository();
 if(route==='/api/products'&&req.method==='GET')return reply(200,(await db.snapshot()).products.sort((a,b)=>b.id-a.id));
 
 if(route==='/api/admin/orders'&&req.method==='GET')return reply(200,(await db.snapshot()).orders.sort((a,b)=>b.id-a.id));
 if(route==='/api/admin/products'&&req.method==='POST'){const values=product(await body());return reply(201,await db.mutate(state=>{const id=state.nextProduct++;state.products.push(Object.fromEntries(['id','name','category','price','stock','image','description'].map((key,i)=>[key,[id,...values][i]])));return{id};}));}
+const sheetOrder=route.match(/^\/api\/admin\/orders\/(\d+)\/sheets$/);if(sheetOrder&&req.method==='POST'){const result=await syncSheets(db,Number(sheetOrder[1]));return reply(200,result);}
 const pm=route.match(/^\/api\/admin\/products\/(\d+)$/);if(pm&&req.method==='PUT'){const values=product(await body());await db.mutate(state=>{const p=state.products.find(p=>p.id===Number(pm[1]));if(!p)throw Error('Produit introuvable');Object.assign(p,Object.fromEntries(['name','category','price','stock','image','description'].map((key,i)=>[key,values[i]])));});return reply(200,{ok:true});}
 if(pm&&req.method==='DELETE'){await db.mutate(state=>{state.products=state.products.filter(p=>p.id!==Number(pm[1]));});return reply(200,{ok:true});}
 const om=route.match(/^\/api\/admin\/orders\/(\d+)$/);if(om&&req.method==='PATCH'){const {status}=await body();if(!['Nouvelle','Confirmée','Expédiée','Livrée','Annulée'].includes(status))throw Error('Statut invalide');await db.mutate(state=>{const order=state.orders.find(o=>o.id===Number(om[1]));if(!order)throw Error('Commande introuvable');order.status=status;});return reply(200,{ok:true});}return reply(404,{error:'Introuvable'});
 }catch(e){if(e.status===409)return reply(409,{error:e.message});if(e.name==='MissingBlobsEnvironmentError'||e.code||/fetch failed|Netlify Blobs/i.test(e.message)){console.error('Storage unavailable:',e.name);return reply(503,{error:'Stockage Netlify indisponible. Vérifiez le déploiement et l’activation de Blobs.'});}return reply(400,{error:e.message});}}
+
+async function syncSheets(repository,id){
+const order=(await repository.snapshot()).orders.find(o=>o.id===id);if(!order)throw Error('Commande introuvable');
+if(order.sheets?.state==='synced')return order.sheets;
+const result=await sendOrderToSheets(order);
+try{await repository.mutate(state=>{const current=state.orders.find(o=>o.id===id);if(current&&current.sheets?.state!=='synced')current.sheets=result;});}catch{return{state:'pending',message:'État de synchronisation à vérifier. Réessayez.'};}
+return result;
+}

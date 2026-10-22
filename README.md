@@ -67,3 +67,7 @@ Une migration unique ajoute 10 unités aux produits Engro déjà importés dont 
 Chaque fiche produit propose **Commander ce produit**. Le client renseigne quantité, nom, téléphone, ville et adresse ; le récapitulatif affiche le prix, les frais de livraison (39 DH, offerts dès 800 DH) et le total avant confirmation. Paiement à la livraison, sans paiement électronique. La commande apparaît dans `/admin` avec les coordonnées, les articles et le statut Nouvelle.
 
 Les prix et la disponibilité sont validés côté serveur et le stock est déduit atomiquement. Un identifiant de demande empêche une double création lors d’une répétition de la même requête. Les anciennes commandes sont préservées. Les coordonnées ne sont accessibles que dans l’administration authentifiée.
+
+## Google Sheets
+
+Les nouvelles commandes peuvent être copiées automatiquement dans Google Sheets. Instructions de configuration : [integrations/google-sheets/README.md](integrations/google-sheets/README.md). Définir `GOOGLE_SHEETS_WEBHOOK_URL` et `GOOGLE_SHEETS_SYNC_TOKEN` côté Netlify après déploiement du script Google. Sans configuration, le site continue à enregistrer les commandes et affiche **À configurer** dans l’administration.
