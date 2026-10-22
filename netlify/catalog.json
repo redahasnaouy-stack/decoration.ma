@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Vase Terra",
+    "category": "Vases",
+    "price": 249,
+    "stock": 18,
+    "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=900&q=80",
+    "description": "Une silhouette organique, une texture brute. Un vase décoratif aux inspirations méditerranéennes."
+  },
+  {
+    "id": 2,
+    "name": "Miroir Halo",
+    "category": "Miroirs",
+    "price": 690,
+    "stock": 8,
+    "image": "https://images.unsplash.com/photo-1602872030219-ad2b9a54315c?auto=format&fit=crop&w=900&q=80",
+    "description": "Un miroir rond pour apporter lumière et profondeur à votre intérieur."
+  },
+  {
+    "id": 3,
+    "name": "Lampe Sora",
+    "category": "Luminaires",
+    "price": 459,
+    "stock": 12,
+    "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=900&q=80",
+    "description": "Une lumière douce et une présence sculpturale pour vos soirées à la maison."
+  },
+  {
+    "id": 4,
+    "name": "Coussin Nomade",
+    "category": "Textiles",
+    "price": 189,
+    "stock": 30,
+    "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=80",
+    "description": "Des tons naturels et un toucher chaleureux pour habiller votre canapé."
+  },
+  {
+    "id": 5,
+    "name": "Vase Ligne",
+    "category": "Vases",
+    "price": 320,
+    "stock": 15,
+    "image": "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?auto=format&fit=crop&w=900&q=80",
+    "description": "Des lignes épurées, un objet intemporel qui trouve sa place partout."
+  },
+  {
+    "id": 6,
+    "name": "Suspension Naya",
+    "category": "Luminaires",
+    "price": 790,
+    "stock": 6,
+    "image": "https://images.unsplash.com/photo-1490312278390-ab64016e0aa9?auto=format&fit=crop&w=900&q=80",
+    "description": "Une suspension aérienne pour composer une atmosphère accueillante."
+  }
+]
