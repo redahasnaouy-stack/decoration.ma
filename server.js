@@ -1,4 +1,5 @@
-import {migrateCatalog,catalogRevision} from './netlify/catalog-migration.mjs';
+import catalog from './netlify/catalog.json' with {type:'json'};
+import {migrateCatalog,catalogRevision,stockRevision} from './netlify/catalog-migration.mjs';
 import {decodeImage,validImage} from './netlify/uploads.mjs';
 import {randomUUID} from 'node:crypto';
 import http from 'node:http';
@@ -11,6 +12,8 @@ const db=new DatabaseSync(new URL('./data/store.sqlite',import.meta.url).pathnam
 db.exec(`PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS products(id INTEGER PRIMARY KEY,name TEXT,category TEXT,price REAL,stock INTEGER,image TEXT,description TEXT); CREATE TABLE IF NOT EXISTS orders(id INTEGER PRIMARY KEY,customer TEXT,phone TEXT,address TEXT,items TEXT,total REAL,status TEXT DEFAULT 'Nouvelle',created TEXT DEFAULT CURRENT_TIMESTAMP); CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT);`);
 if(!db.prepare("SELECT value FROM settings WHERE key='catalog-revision'").get()){
 const state={products:db.prepare('SELECT * FROM products').all(),nextProduct:1};migrateCatalog(state);db.exec('BEGIN');try{const retained=new Set(state.products.map(p=>p.id));for(const p of db.prepare('SELECT id FROM products').all())if(!retained.has(p.id))db.prepare('DELETE FROM products WHERE id=?').run(p.id);for(const p of state.products)db.prepare('INSERT OR IGNORE INTO products(id,name,category,price,stock,image,description) VALUES(?,?,?,?,?,?,?)').run(p.id,p.name,p.category,p.price,p.stock,p.image,p.description);db.prepare("INSERT OR REPLACE INTO settings(key,value) VALUES('catalog-revision',?)").run(catalogRevision);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}}
+if(!db.prepare("SELECT value FROM settings WHERE key='stock-revision'").get()){
+db.exec('BEGIN');try{for(const p of catalog)db.prepare('UPDATE products SET stock=10 WHERE name=? AND stock=0 AND (image=? OR image=?)').run(p.name,p.image,p.sourceImage);db.prepare("INSERT INTO settings(key,value) VALUES('stock-revision',?)").run(stockRevision);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}}
 const sessions=new Map();
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
 async function body(req){let b='';for await(const c of req){b+=c;if(b.length>100000)throw Error('Requête trop volumineuse');}return JSON.parse(b||'{}');}
