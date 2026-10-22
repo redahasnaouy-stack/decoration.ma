@@ -1,6 +1,6 @@
 # dicoration
 
-Catalogue de décoration en français : grille de quatre produits sur ordinateur, recherche, filtres, fiches descriptives et dashboard privé pour gérer les produits et photos. Aucun panier ni commande en ligne. Les anciennes commandes restent consultables dans l’administration.
+Catalogue de décoration en français : grille de quatre produits sur ordinateur, recherche, filtres, fiches descriptives et dashboard privé pour gérer les produits et photos. Commande directe d’un produit avec formulaire client, sans panier. Les anciennes commandes restent consultables dans l’administration.
 
 ## Démarrer
 
@@ -62,6 +62,8 @@ La migration du catalogue Engro est appliquée une seule fois. Les anciennes fic
 
 Une migration unique ajoute 10 unités aux produits Engro déjà importés dont le stock est encore 0. Les quantités positives et les produits personnalisés restent inchangés. Elle ne se réapplique pas après une vente ou un passage à zéro ultérieur.
 
-## Mode catalogue
+## Commande directe sans panier
 
-Le site public affiche uniquement les produits, leurs photos, prix et descriptions. Les fiches se ferment par la croix, la touche Échap ou un clic extérieur. Le panier, le formulaire de commande et les annonces de livraison/paiement ont été retirés. `POST /api/orders` renvoie 410 pour empêcher de nouvelles commandes ; les données historiques sont conservées.
+Chaque fiche produit propose **Commander ce produit**. Le client renseigne quantité, nom, téléphone, ville et adresse ; le récapitulatif affiche le prix, les frais de livraison (39 DH, offerts dès 800 DH) et le total avant confirmation. Paiement à la livraison, sans paiement électronique. La commande apparaît dans `/admin` avec les coordonnées, les articles et le statut Nouvelle.
+
+Les prix et la disponibilité sont validés côté serveur et le stock est déduit atomiquement. Un identifiant de demande empêche une double création lors d’une répétition de la même requête. Les anciennes commandes sont préservées. Les coordonnées ne sont accessibles que dans l’administration authentifiée.

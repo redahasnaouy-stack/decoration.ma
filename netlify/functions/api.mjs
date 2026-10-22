@@ -1,3 +1,4 @@
+import {validateOrder,placeOrder} from '../orders.mjs';
 import {getStore} from '@netlify/blobs';
 import {randomUUID} from 'node:crypto';
 import {decodeImage,validImage} from '../uploads.mjs';
@@ -16,7 +17,7 @@ if(route.startsWith('/api/admin/')&&!authenticated(req))return reply(401,{error:
 const asset=route.match(/^\/api\/images\/([a-f0-9-]{36})$/);
 if(asset&&req.method==='GET'){const image=await getStore({name:'dicoration-images',consistency:'strong'}).getWithMetadata(asset[1],{type:'arrayBuffer'});if(!image)return reply(404,{error:'Image introuvable'});return new Response(image.data,{headers:{'content-type':image.metadata.mime,'cache-control':'public, max-age=31536000, immutable','x-content-type-options':'nosniff'}});}
 if(route==='/api/admin/images'&&req.method==='POST'){const text=await req.text();if(text.length>2900000)throw Error('Image trop volumineuse');const {bytes,mime}=decodeImage(JSON.parse(text));const id=randomUUID();await getStore({name:'dicoration-images',consistency:'strong'}).set(id,bytes,{metadata:{mime}});return reply(201,{image:'/api/images/'+id});}
-if(route==='/api/orders'&&req.method==='POST')return reply(410,{error:'Ce site présente un catalogue. Les commandes en ligne sont désactivées.'});
+if(route==='/api/orders'&&req.method==='POST'){const input=validateOrder(await body());return reply(201,await createRepository().mutate(state=>placeOrder(state,input)));}
 const db=createRepository();
 if(route==='/api/products'&&req.method==='GET')return reply(200,(await db.snapshot()).products.sort((a,b)=>b.id-a.id));
 

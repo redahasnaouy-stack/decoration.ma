@@ -1,0 +1,4 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {validateOrder,placeOrder} from '../netlify/orders.mjs';
+test('Commande directe: total serveur, stock et répétition sans doublon',()=>{const state={products:[{id:1,name:'Lampe',price:200,stock:3}],orders:[],nextOrder:1};const input=validateOrder({customer:'Client test',phone:'0600000000',city:'Rabat',address:'Adresse de test',productId:1,quantity:2,requestId:'11111111-1111-4111-8111-111111111111',total:1});const result=placeOrder(state,input);assert.equal(result.total,439);assert.equal(state.products[0].stock,1);assert.deepEqual(placeOrder(state,input),result);assert.equal(state.orders.length,1);assert.equal(state.products[0].stock,1);assert.throws(()=>placeOrder(state,{...input,requestId:'22222222-2222-4222-8222-222222222222'}),/quantité/);assert.throws(()=>validateOrder({...input,phone:'invalide'}));});
