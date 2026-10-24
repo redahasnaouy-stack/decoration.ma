@@ -71,3 +71,17 @@ Les prix et la disponibilité sont validés côté serveur et le stock est dédu
 ## Google Sheets
 
 Les nouvelles commandes peuvent être copiées automatiquement dans Google Sheets. Instructions de configuration : [integrations/google-sheets/README.md](integrations/google-sheets/README.md). Définir `GOOGLE_SHEETS_WEBHOOK_URL` et `GOOGLE_SHEETS_SYNC_TOKEN` côté Netlify après déploiement du script Google. Sans configuration, le site continue à enregistrer les commandes et affiche **À configurer** dans l’administration.
+
+## Meta Pixel, TikTok Pixel et Google Ads
+
+Dans `/admin`, ouvrir **Pixels & Publicité**. Renseigner les identifiants, activer les plateformes souhaitées puis enregistrer. Les réglages sont persistants (Netlify Blobs en production, SQLite en local) et ne nécessitent pas de redéploiement. Les identifiants publics des pixels sont les seules valeurs acceptées : ne pas coller de JavaScript, clé API ou access token.
+
+- Meta : identifiant numérique du Pixel, évènements PageView, ViewContent, InitiateCheckout, Lead.
+- TikTok : identifiant Pixel, évènements page, ViewContent, InitiateCheckout, SubmitForm.
+- Google Ads : identifiant `AW-…` et libellé de conversion provenant de l’action de conversion choisie. Le libellé est nécessaire pour mesurer les demandes enregistrées ; configurer cette action comme prospect / demande, pas comme paiement encaissé. Le même identifiant de demande est utilisé comme transaction_id pour limiter les doublons.
+
+Une demande enregistrée avec paiement à la livraison est suivie comme prospect, pas comme achat payé. Les évènements de conversion partent après confirmation de l’API uniquement. Les coordonnées client, les secrets et les données Google Sheets ne sont pas ajoutés aux paramètres des évènements par le site. Les fournisseurs reçoivent leurs données techniques habituelles lorsque leurs scripts sont autorisés.
+
+Aucun script publicitaire n’est chargé avant l’accord du visiteur. Le pied de page permet de modifier le choix ; refuser après activation révoque le consentement et recharge la page sans balises. Le site reste utilisable après refus. Actualiser les mentions de confidentialité avec les fournisseurs effectivement activés et les coordonnées du responsable du site avant utilisation commerciale.
+
+Le suivi est effectué dans le navigateur (pas de Conversions API, Events API ou envoi serveur). Bloqueurs, restrictions du navigateur et refus du visiteur peuvent empêcher la mesure. Les tests locaux vérifient réglages, consentement et évènements avec des scripts fournisseurs simulés ; la réception réelle doit être vérifiée avec vos identifiants dans Meta Events Manager / Pixel Helper, TikTok Events Manager / Pixel Helper et Google Tag Assistant.

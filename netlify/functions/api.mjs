@@ -1,3 +1,4 @@
+import {defaultMarketing,validateMarketing} from '../marketing.mjs';
 import {sendOrderToSheets} from '../sheets.mjs';
 import {validateOrder,placeOrder} from '../orders.mjs';
 import {getStore} from '@netlify/blobs';
@@ -20,6 +21,8 @@ if(asset&&req.method==='GET'){const image=await getStore({name:'dicoration-image
 if(route==='/api/admin/images'&&req.method==='POST'){const text=await req.text();if(text.length>2900000)throw Error('Image trop volumineuse');const {bytes,mime}=decodeImage(JSON.parse(text));const id=randomUUID();await getStore({name:'dicoration-images',consistency:'strong'}).set(id,bytes,{metadata:{mime}});return reply(201,{image:'/api/images/'+id});}
 if(route==='/api/orders'&&req.method==='POST'){const input=validateOrder(await body());const repository=createRepository();const result=await repository.mutate(state=>placeOrder(state,input));try{await syncSheets(repository,result.id);}catch{}return reply(201,result);}
 const db=createRepository();
+if((route==='/api/marketing'||route==='/api/admin/marketing')&&req.method==='GET')return reply(200,(await db.snapshot()).marketing||defaultMarketing);
+if(route==='/api/admin/marketing'&&req.method==='PUT'){const settings=validateMarketing(await body());await db.mutate(state=>{state.marketing=settings;});return reply(200,settings);}
 if(route==='/api/products'&&req.method==='GET')return reply(200,(await db.snapshot()).products.sort((a,b)=>b.id-a.id));
 
 if(route==='/api/admin/orders'&&req.method==='GET')return reply(200,(await db.snapshot()).orders.sort((a,b)=>b.id-a.id));

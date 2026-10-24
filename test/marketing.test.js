@@ -1,0 +1,4 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {defaultMarketing,validateMarketing} from '../netlify/marketing.mjs';
+test('Marketing: désactivé par défaut, identifiants validés, aucun code arbitraire',()=>{assert.equal(defaultMarketing.metaEnabled,false);const input={...defaultMarketing,metaEnabled:true,metaPixelId:'123456789012345',googleEnabled:true,googleAdsId:'AW-123456789',googleConversionLabel:'Label_123-abc'};assert.deepEqual(validateMarketing(input),input);assert.throws(()=>validateMarketing({...input,metaPixelId:'<script>alert(1)</script>'}));assert.throws(()=>validateMarketing({...input,googleAdsId:'G-12345'}));assert.throws(()=>validateMarketing({...input,tiktokEnabled:true,tiktokPixelId:''}));assert.throws(()=>validateMarketing({...input,googleConversionLabel:'https://evil.example'}));assert.equal(validateMarketing({...input,secret:'not-saved'}).secret,undefined);});
