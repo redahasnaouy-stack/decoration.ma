@@ -85,3 +85,9 @@ Une demande enregistrée avec paiement à la livraison est suivie comme prospect
 Aucun script publicitaire n’est chargé avant l’accord du visiteur. Le pied de page permet de modifier le choix ; refuser après activation révoque le consentement et recharge la page sans balises. Le site reste utilisable après refus. Actualiser les mentions de confidentialité avec les fournisseurs effectivement activés et les coordonnées du responsable du site avant utilisation commerciale.
 
 Le suivi est effectué dans le navigateur (pas de Conversions API, Events API ou envoi serveur). Bloqueurs, restrictions du navigateur et refus du visiteur peuvent empêcher la mesure. Les tests locaux vérifient réglages, consentement et évènements avec des scripts fournisseurs simulés ; la réception réelle doit être vérifiée avec vos identifiants dans Meta Events Manager / Pixel Helper, TikTok Events Manager / Pixel Helper et Google Tag Assistant.
+
+## Liens directs des produits
+
+Chaque produit dispose d’un chemin `/produit/ID-nom-du-produit`. Cliquer une fiche met à jour l’URL ; ouvrir ce lien directement ou actualiser la page affiche automatiquement les détails correspondants. L’identifiant reste la référence : un lien partagé continue à fonctionner si le nom change. Le bouton **Copier le lien du produit** fournit l’adresse complète du domaine courant. Les boutons précédent/suivant du navigateur suivent les ouvertures et fermetures de fiches. Un produit retiré affiche un message et un retour vers la collection.
+
+`netlify.toml` réécrit `/produit/*` vers `index.html` pour les accès directs. Le serveur local prend en charge les mêmes chemins. Les aperçus sociaux restent ceux de la page générale ; ces liens affichent les détails côté navigateur.
