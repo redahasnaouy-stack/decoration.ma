@@ -63,3 +63,7 @@ Les intégrations du site Netlify ne suivent pas automatiquement les commandes S
 - Shopify Theme Check : aucune nouvelle erreur dans nos personnalisations. Deux erreurs `UnknownFilter applicable_disclosures` et six avertissements existent déjà dans l’export Horizon original ; ces fichiers natifs sont conservés. Le rapport brut est fourni à côté du ZIP.
 - Aperçu graphique local : images disponibles, 6 univers, FAQ, ordinateur et mobile sans débordement. Les captures sont un aperçu de la direction graphique avec des produits simulés, pas une preuve du checkout Shopify.
 - Sans connexion à votre compte, import, rendu Shopify réel, achat, contact, paiement et livraison ne peuvent être validés ici. Effectuer ces vérifications dans l’aperçu de Shopify avant publication.
+
+## Correctif v2 — sélection vide
+
+Importer `deccoration-shopify-v2.zip`. L’option **Afficher le catalogue si la collection est vide** est activée par défaut. La section utilise la collection choisie si elle contient des produits, sinon le catalogue général accessible au visiteur. Elle ne peut pas publier les produits ni les rendre disponibles dans un marché : si aucun produit n’est accessible, un message explicite remplace les images de démonstration. Le mode d’édition explique alors les paramètres à vérifier.
